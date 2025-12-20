@@ -1,0 +1,116 @@
+.home-page {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  background: var(--accent-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.recent-section {
+  margin-bottom: 3rem;
+}
+
+.books-section {
+  margin-bottom: 2rem;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.load-more-trigger {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-container {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-primary);
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.error-container h2 {
+  color: #f5576c;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.error-message {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.error-hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 1.5rem 0;
+  line-height: 1.6;
+}
+
+.error-hint ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.error-hint li {
+  padding: 0.25rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.error-hint li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--text-secondary);
+}
+
+.error-hint code {
+  background: var(--bg-glass);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Minecraft', monospace;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.error-container button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+}
+

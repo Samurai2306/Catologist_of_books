@@ -1,0 +1,46 @@
+.book-filters {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filters-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--accent-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.filters-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-input {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .book-filters {
+    padding: 1rem;
+  }
+
+  .filters-content {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-input {
+    grid-column: 1;
+  }
+}
+

@@ -1,0 +1,34 @@
+{
+  "name": "catologist-of-books",
+  "version": "1.0.0",
+  "description": "Каталог книг - современное веб-приложение с административной панелью и чатом",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.12.2",
+    "axios": "^1.6.2",
+    "gsap": "^3.12.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-intersection-observer": "^9.5.3",
+    "react-router-dom": "^6.20.0",
+    "socket.io-client": "^4.5.4",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vite": "^6.4.1"
+  }
+}

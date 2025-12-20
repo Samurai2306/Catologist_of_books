@@ -1,0 +1,120 @@
+.select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  position: relative;
+}
+
+.select-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.select {
+  padding: 0.75rem 1rem;
+  padding-right: 2.5rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: 'Minecraft', sans-serif;
+  transition: all 0.3s ease;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23667eea' d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  box-shadow: var(--shadow-sm);
+}
+
+.select:hover {
+  background: var(--bg-glass-hover);
+  border-color: rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.select:focus {
+  outline: none;
+  border-color: #667eea;
+  background: var(--bg-glass-hover);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.select:active {
+  transform: translateY(0);
+}
+
+.select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border: none;
+  font-family: 'Minecraft', sans-serif;
+}
+
+.select option:hover {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.select option:checked,
+.select option:focus {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.select[multiple] {
+  background-image: none;
+  padding-right: 1rem;
+  min-height: 120px;
+  padding: 0.75rem;
+}
+
+.select[multiple] option {
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: var(--bg-glass);
+  border: 1px solid transparent;
+}
+
+.select[multiple] option:hover {
+  background: var(--bg-glass-hover);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateX(4px);
+}
+
+.select[multiple] option:checked {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+  border-color: #667eea;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.select-error {
+  border-color: #f5576c;
+}
+
+.select-error:hover {
+  border-color: #f5576c;
+}
+
+.select-error:focus {
+  border-color: #f5576c;
+  box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.15), var(--shadow-md);
+}
+
+.select-error-text {
+  color: #f5576c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
