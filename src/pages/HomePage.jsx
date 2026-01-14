@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/UI/LoadingSpinner'
 import Button from '../components/UI/Button'
 import { useInView } from 'react-intersection-observer'
 import { useEffect, useState } from 'react'
+import _ from 'lodash'
 import './HomePage.css'
 
 function HomePage() {
@@ -42,64 +43,65 @@ function HomePage() {
   }, [data])
 
   const filteredBooks = useMemo(() => {
-    if (!allBooks || allBooks.length === 0) return []
+    if (_.isEmpty(allBooks)) return []
 
-    let filtered = [...allBooks]
+    let filtered = _.cloneDeep(allBooks)
 
-    // Поиск
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(book =>
-        book.title?.toLowerCase().includes(query) ||
-        book.authors?.some(a => 
-          (typeof a === 'string' ? a : a.name)?.toLowerCase().includes(query)
+    // Поиск с использованием lodash
+    if (!_.isEmpty(searchQuery)) {
+      const query = _.toLower(searchQuery)
+      filtered = _.filter(filtered, book => {
+        const titleMatch = _.includes(_.toLower(_.get(book, 'title', '')), query)
+        const authorMatch = _.some(
+          _.get(book, 'authors', []),
+          a => _.includes(_.toLower(_.isString(a) ? a : _.get(a, 'name', '')), query)
         )
-      )
+        return titleMatch || authorMatch
+      })
     }
 
     // Фильтр по жанру
-    if (selectedGenre) {
+    if (!_.isNil(selectedGenre)) {
       const genreId = String(selectedGenre)
-      filtered = filtered.filter(book =>
-        book.genres?.some(g => {
-          const gId = typeof g === 'object' ? g.id : g
+      filtered = _.filter(filtered, book =>
+        _.some(_.get(book, 'genres', []), g => {
+          const gId = _.isObject(g) ? _.get(g, 'id') : g
           return String(gId) === genreId
         })
       )
     }
 
     // Фильтр по автору
-    if (selectedAuthor) {
+    if (!_.isNil(selectedAuthor)) {
       const authorId = String(selectedAuthor)
-      filtered = filtered.filter(book =>
-        book.authors?.some(a => {
-          const aId = typeof a === 'object' ? a.id : a
+      filtered = _.filter(filtered, book =>
+        _.some(_.get(book, 'authors', []), a => {
+          const aId = _.isObject(a) ? _.get(a, 'id') : a
           return String(aId) === authorId
         })
       )
     }
 
     // Фильтр по году издания
-    if (selectedYear) {
+    if (!_.isNil(selectedYear)) {
       const yearValue = Number(selectedYear)
-      filtered = filtered.filter(book =>
-        book.publicationYear === yearValue
-      )
+      filtered = _.filter(filtered, book => _.get(book, 'publicationYear') === yearValue)
     }
 
-    // Сортировка
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'title':
-          return (a.title || '').localeCompare(b.title || '')
-        case 'date':
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0)
-        default:
-          return 0
-      }
-    })
+    // Сортировка с использованием lodash orderBy
+    switch (sortBy) {
+      case 'title':
+        filtered = _.orderBy(filtered, [book => _.toLower(_.get(book, 'title', ''))], ['asc'])
+        break
+      case 'date':
+        filtered = _.orderBy(filtered, [book => new Date(_.get(book, 'createdAt', 0))], ['desc'])
+        break
+      case 'rating':
+        filtered = _.orderBy(filtered, [book => _.get(book, 'rating', 0)], ['desc'])
+        break
+      default:
+        break
+    }
 
     return filtered
   }, [allBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, sortBy])
@@ -113,13 +115,14 @@ function HomePage() {
   const displayedBooks = filteredBooks.slice(0, page * itemsPerPage)
   const hasMore = filteredBooks.length > displayedBooks.length
 
-  // Получаем недавно просмотренные книги
+  // Получаем недавно просмотренные книги с использованием lodash
   const recentBooks = useMemo(() => {
-    if (!viewedBooks || viewedBooks.length === 0) return []
-    return viewedBooks
-      .map(id => allBooks.find(b => b.id === id))
-      .filter(Boolean)
-      .slice(0, 6)
+    if (_.isEmpty(viewedBooks)) return []
+    return _.chain(viewedBooks)
+      .map(id => _.find(allBooks, b => b.id === id))
+      .compact()
+      .take(6)
+      .value()
   }, [viewedBooks, allBooks])
 
   if (isLoading) {

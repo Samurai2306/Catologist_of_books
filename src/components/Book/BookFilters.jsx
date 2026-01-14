@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { authorsAPI, genresAPI, booksAPI } from '../../services/api'
 import { useBookStore } from '../../stores/useBookStore'
 import Input from '../UI/Input'
 import Select from '../UI/Select'
 import Button from '../UI/Button'
+import _ from 'lodash'
 import './BookFilters.css'
 
 function BookFilters() {
@@ -39,27 +40,34 @@ function BookFilters() {
     queryFn: () => booksAPI.getAll().then(res => res.data),
   })
 
+  // Debounced search с использованием lodash
+  const debouncedSetSearch = useCallback(
+    _.debounce((value) => {
+      setSearchQuery(value)
+    }, 300),
+    [setSearchQuery]
+  )
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(localSearch)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [localSearch, setSearchQuery])
+    debouncedSetSearch(localSearch)
+    return () => debouncedSetSearch.cancel()
+  }, [localSearch, debouncedSetSearch])
 
   const authors = authorsData || []
   const genres = genresData || []
   
-  // Получаем уникальные годы издания
+  // Получаем уникальные годы издания с использованием lodash
   const availableYears = useMemo(() => {
-    if (!booksData || !Array.isArray(booksData)) return []
-    const years = booksData
+    if (_.isEmpty(booksData)) return []
+    return _.chain(booksData)
       .map(book => {
-        const year = book.publicationYear || book.year_of_release
-        return year != null && year !== '' ? Number(year) : null
+        const year = _.get(book, 'publicationYear') || _.get(book, 'year_of_release')
+        return !_.isNil(year) && year !== '' ? Number(year) : null
       })
-      .filter(year => year != null && !isNaN(year) && year > 0)
-      .sort((a, b) => b - a)
-    return [...new Set(years)]
+      .filter(year => !_.isNil(year) && !_.isNaN(year) && year > 0)
+      .uniq()
+      .orderBy([], ['desc'])
+      .value()
   }, [booksData])
 
   const sortOptions = [

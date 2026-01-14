@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Chat - Web Component Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      color: #764ba2;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    p {
+      color: #4a5568;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .info-box {
+      background: #f7fafc;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+
+    .info-box strong {
+      color: #667eea;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      background: #2d3748;
+      color: #68d391;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .demo-controls {
+      display: flex;
+      gap: 1rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+
+    .demo-controls input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .demo-controls button {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .demo-controls button:hover {
+      transform: translateY(-2px);
+    }
+
+    .feature-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+
+    .feature-list li {
+      padding: 0.5rem 0;
+      color: #4a5568;
+    }
+
+    .feature-list li:before {
+      content: "✓";
+      color: #48bb78;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .warning {
+      background: #fff5f5;
+      border-left: 4px solid #fc8181;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      color: #742a2a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Book Chat - Web Component</h1>
+    <p>
+      Демонстрация автономного веб-компонента чата с использованием 
+      <code>Shadow DOM</code> и <code>Socket.IO</code>.
+    </p>
+
+    <div class="info-box">
+      <strong>Как использовать:</strong>
+      Кликните на кнопку чата в правом нижнем углу экрана. 
+      Веб-компонент работает полностью независимо от основного приложения!
+    </div>
+
+    <h2>🎯 Особенности</h2>
+    <ul class="feature-list">
+      <li>Полная изоляция стилей через Shadow DOM</li>
+      <li>Работает в любом фреймворке (React, Vue, Angular) или без фреймворка</li>
+      <li>WebSocket подключение в реальном времени</li>
+      <li>Адаптивный дизайн для мобильных устройств</li>
+      <li>Элегантные анимации и переходы</li>
+      <li>Автоматическое переподключение при разрыве соединения</li>
+    </ul>
+
+    <h2>🔧 Управление компонентом</h2>
+    <div class="demo-controls">
+      <input 
+        type="text" 
+        id="username-input" 
+        placeholder="Введите имя пользователя"
+        value="DemoUser"
+      />
+      <button onclick="updateUsername()">Обновить имя</button>
+    </div>
+
+    <div class="demo-controls">
+      <input 
+        type="text" 
+        id="ws-url-input" 
+        placeholder="WebSocket URL"
+        value="ws://158.160.203.172:8081"
+      />
+      <button onclick="updateWsUrl()">Обновить URL</button>
+    </div>
+
+    <div class="warning">
+      ⚠️ <strong>Внимание:</strong> Для работы чата необходим запущенный WebSocket сервер. 
+      В production окружении убедитесь, что используется защищённое соединение (WSS).
+    </div>
+
+    <h2>📝 Код для интеграции</h2>
+    <div class="info-box">
+      <strong>HTML:</strong>
+      <pre style="overflow-x: auto; padding: 1rem; background: #2d3748; color: #68d391; border-radius: 4px; margin-top: 0.5rem;"><code>&lt;book-chat 
+  ws-url="ws://localhost:8081" 
+  username="YourName"
+  theme="dark"&gt;
+&lt;/book-chat&gt;
+
+&lt;script type="module" src="./BookChat.js"&gt;&lt;/script&gt;</code></pre>
+    </div>
+
+    <h2>🚀 Использование в разных фреймворках</h2>
+    
+    <div class="info-box">
+      <strong>React:</strong>
+      <pre style="overflow-x: auto; padding: 1rem; background: #2d3748; color: #68d391; border-radius: 4px; margin-top: 0.5rem;"><code>import './BookChat.js'
+
+function App() {
+  return &lt;book-chat ws-url="..." username="..." /&gt;
+}</code></pre>
+    </div>
+
+    <div class="info-box">
+      <strong>Vue:</strong>
+      <pre style="overflow-x: auto; padding: 1rem; background: #2d3748; color: #68d391; border-radius: 4px; margin-top: 0.5rem;"><code>&lt;template&gt;
+  &lt;book-chat :ws-url="wsUrl" :username="user" /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import './BookChat.js'
+&lt;/script&gt;</code></pre>
+    </div>
+
+    <div class="info-box">
+      <strong>Vanilla JS:</strong>
+      <pre style="overflow-x: auto; padding: 1rem; background: #2d3748; color: #68d391; border-radius: 4px; margin-top: 0.5rem;"><code>const chat = document.createElement('book-chat')
+chat.setAttribute('ws-url', 'ws://localhost:8081')
+chat.setAttribute('username', 'User')
+document.body.appendChild(chat)</code></pre>
+    </div>
+  </div>
+
+  <!-- Веб-компонент чата -->
+  <book-chat id="demo-chat" ws-url="ws://158.160.203.172:8081" username="DemoUser"></book-chat>
+
+  <!-- Подключение веб-компонента -->
+  <script type="module">
+    // Импортируем Socket.IO client
+    import { io } from 'https://cdn.socket.io/4.5.4/socket.io.esm.min.js'
+
+    // Делаем io доступным глобально для BookChat
+    window.io = io
+
+    // Динамический импорт компонента
+    // В production используйте собранный файл
+    const BookChatCode = await fetch('/src/components/WebComponents/BookChat.js').then(r => r.text())
+    
+    // Создаем и выполняем скрипт
+    const script = document.createElement('script')
+    script.type = 'module'
+    script.textContent = BookChatCode.replace("import { io } from 'socket.io-client'", "const io = window.io")
+    document.body.appendChild(script)
+  </script>
+
+  <script>
+    // Функции управления компонентом
+    function updateUsername() {
+      const username = document.getElementById('username-input').value
+      const chat = document.getElementById('demo-chat')
+      chat.setAttribute('username', username)
+      alert('Имя пользователя обновлено! Перезагрузите страницу для применения.')
+    }
+
+    function updateWsUrl() {
+      const wsUrl = document.getElementById('ws-url-input').value
+      const chat = document.getElementById('demo-chat')
+      chat.setAttribute('ws-url', wsUrl)
+      alert('WebSocket URL обновлён! Перезагрузите страницу для применения.')
+    }
+
+    // Логирование для отладки
+    window.addEventListener('load', () => {
+      console.log('📚 Book Chat Web Component Demo загружен')
+      console.log('Проверьте правый нижний угол для кнопки чата')
+    })
+  </script>
+</body>
+</html>

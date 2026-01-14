@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query'
 import { booksAPI } from '../../services/api'
 import Button from '../UI/Button'
 import toast from 'react-hot-toast'
+import { formatTime, formatChatMessageDate } from '../../utils/dateUtils'
+import { chatUsernameSchema, validateData } from '../../utils/validation'
 import './ChatSidebar.css'
 
 function ChatSidebar() {
@@ -103,18 +105,12 @@ function ChatSidebar() {
     e.preventDefault()
     const trimmedUsername = username.trim()
     
-    if (!trimmedUsername) {
-      setUsernameError('Введите ваше имя')
-      return
-    }
+    // Валидация с использованием Zod
+    const validation = validateData(chatUsernameSchema, trimmedUsername)
     
-    if (trimmedUsername.length < 2) {
-      setUsernameError('Имя должно содержать минимум 2 символа')
-      return
-    }
-    
-    if (trimmedUsername.length > 30) {
-      setUsernameError('Имя не должно превышать 30 символов')
+    if (!validation.success) {
+      const firstError = Object.values(validation.errors)[0]
+      setUsernameError(firstError)
       return
     }
     
@@ -274,12 +270,8 @@ function ChatSidebar() {
 // Компонент сообщения
 function ChatMessage({ message, currentUsername, books }) {
   const isOwn = message.username === currentUsername
-  const timestamp = message.timestamp
-    ? new Date(message.timestamp).toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : ''
+  // Использование dayjs для форматирования времени
+  const timestamp = message.timestamp ? formatTime(message.timestamp) : ''
 
   const bookLinks = message.bookIds
     ? message.bookIds

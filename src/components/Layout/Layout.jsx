@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import ChatSidebar from '../Chat/ChatSidebar'
+import WebChatWrapper from '../WebComponents/WebChatWrapper'
 import './Layout.css'
 
 function Layout({ children }) {
@@ -35,7 +36,12 @@ function Layout({ children }) {
       <footer className="footer glass">
         <p>&copy; 2024 Каталог книг. Все права защищены.</p>
       </footer>
+      {/* React компонент чата */}
       <ChatSidebar />
+      
+      {/* Native Web Component чата (альтернативная реализация) */}
+      {/* Раскомментируйте для использования веб-компонента вместо React компонента */}
+      {/* <WebChatWrapper /> */}
     </div>
   )
 }

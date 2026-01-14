@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
+import { runMigration } from './db/migration'
+import { initAuthCache } from './utils/authIndexDB'
+// Регистрация веб-компонентов
+import './components/WebComponents'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,6 +18,15 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 минут
     },
   },
+})
+
+// Запуск миграции данных из LocalStorage в IndexedDB
+runMigration().then((result) => {
+  if (result.success) {
+    console.log('IndexedDB готова к использованию')
+    // Инициализация кэша авторизации
+    initAuthCache()
+  }
 })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
