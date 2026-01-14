@@ -65,26 +65,31 @@ function HomePage() {
 
     // Фильтр по жанру
     if (selectedGenre) {
+      const genreId = String(selectedGenre)
       filtered = filtered.filter(book =>
-        book.genres?.some(g => 
-          (typeof g === 'object' ? g.id : g) === selectedGenre
-        )
+        book.genres?.some(g => {
+          const gId = typeof g === 'object' ? g.id : g
+          return String(gId) === genreId
+        })
       )
     }
 
     // Фильтр по автору
     if (selectedAuthor) {
+      const authorId = String(selectedAuthor)
       filtered = filtered.filter(book =>
-        book.authors?.some(a => 
-          (typeof a === 'object' ? a.id : a) === selectedAuthor
-        )
+        book.authors?.some(a => {
+          const aId = typeof a === 'object' ? a.id : a
+          return String(aId) === authorId
+        })
       )
     }
 
     // Фильтр по году издания
     if (selectedYear) {
+      const yearValue = Number(selectedYear)
       filtered = filtered.filter(book =>
-        book.publicationYear === Number(selectedYear)
+        book.publicationYear === yearValue
       )
     }
 
@@ -169,7 +174,13 @@ function HomePage() {
         </h2>
         {displayedBooks.length === 0 ? (
           <div className="empty-state">
-            <p>Книги не найдены</p>
+            <p className="empty-state-icon">📚</p>
+            <p className="empty-state-text">Книги не найдены</p>
+            <p className="empty-state-hint">
+              {searchQuery || selectedGenre || selectedAuthor || selectedYear
+                ? 'Попробуйте изменить фильтры поиска'
+                : 'В каталоге пока нет книг'}
+            </p>
           </div>
         ) : (
           <>

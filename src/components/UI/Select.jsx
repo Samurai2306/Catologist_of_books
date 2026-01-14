@@ -21,7 +21,7 @@ function Select({
         multiple={multiple}
         {...props}
       >
-        {!multiple && <option value="">{placeholder}</option>}
+        {!multiple && placeholder && <option value="">{placeholder}</option>}
         {options.map((option) => (
           <option key={option.value} value={String(option.value)}>
             {option.label}

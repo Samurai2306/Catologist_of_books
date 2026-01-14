@@ -2,7 +2,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { booksAPI } from '../services/api'
 import { useBookStore } from '../stores/useBookStore'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import LoadingSpinner from '../components/UI/LoadingSpinner'
 import BookCard from '../components/Book/BookCard'
 import './BookDetailPage.css'
@@ -30,20 +30,34 @@ function BookDetailPage() {
   }, [book, addViewedBook])
 
   // Похожие книги
-  const similarBooks = book && allBooks ? allBooks
-    .filter(b => 
-      b.id !== book.id && 
-      (book.genres?.some(g => 
-        b.genres?.some(bg => 
-          (typeof g === 'object' ? g.id : g) === (typeof bg === 'object' ? bg.id : bg)
-        )
-      ) || book.authors?.some(a => 
-        b.authors?.some(ba => 
-          (typeof a === 'object' ? a.id : a) === (typeof ba === 'object' ? ba.id : ba)
-        )
-      ))
+  const similarBooks = useMemo(() => {
+    if (!book || !allBooks || !Array.isArray(allBooks)) return []
+    
+    const bookGenreIds = new Set(
+      (book.genres || []).map(g => String(typeof g === 'object' ? g.id : g))
     )
-    .slice(0, 6) : []
+    const bookAuthorIds = new Set(
+      (book.authors || []).map(a => String(typeof a === 'object' ? a.id : a))
+    )
+    
+    return allBooks
+      .filter(b => {
+        if (b.id === book.id) return false
+        
+        const hasCommonGenre = (b.genres || []).some(bg => {
+          const bgId = String(typeof bg === 'object' ? bg.id : bg)
+          return bookGenreIds.has(bgId)
+        })
+        
+        const hasCommonAuthor = (b.authors || []).some(ba => {
+          const baId = String(typeof ba === 'object' ? ba.id : ba)
+          return bookAuthorIds.has(baId)
+        })
+        
+        return hasCommonGenre || hasCommonAuthor
+      })
+      .slice(0, 6)
+  }, [book, allBooks])
 
   if (isLoading) {
     return <LoadingSpinner />
@@ -82,10 +96,24 @@ function BookDetailPage() {
       <div className="book-detail-container">
         <div className="book-detail-image">
           {book.imageUrl ? (
-            <img src={book.imageUrl} alt={book.title} />
-          ) : (
-            <div className="book-detail-placeholder">📖</div>
-          )}
+            <img 
+              src={book.imageUrl} 
+              alt={book.title}
+              onError={(e) => {
+                e.target.style.display = 'none'
+                const placeholder = e.target.nextElementSibling || e.target.parentElement.querySelector('.book-detail-placeholder')
+                if (placeholder) {
+                  placeholder.style.display = 'flex'
+                } else {
+                  const div = document.createElement('div')
+                  div.className = 'book-detail-placeholder'
+                  div.textContent = '📖'
+                  e.target.parentElement.appendChild(div)
+                }
+              }}
+            />
+          ) : null}
+          <div className="book-detail-placeholder" style={{ display: book.imageUrl ? 'none' : 'flex' }}>📖</div>
         </div>
 
         <div className="book-detail-info">
@@ -120,10 +148,12 @@ function BookDetailPage() {
             </div>
           )}
 
-          {book.rating !== undefined && (
+          {book.rating !== undefined && book.rating !== null && (
             <div className="book-detail-meta">
               <span className="meta-label">Рейтинг:</span>
-              <span className="meta-value">{book.rating} ⭐</span>
+              <span className="meta-value">
+                {typeof book.rating === 'number' ? book.rating.toFixed(1) : book.rating} ⭐
+              </span>
             </div>
           )}
 

@@ -51,10 +51,13 @@ function BookFilters() {
   
   // Получаем уникальные годы издания
   const availableYears = useMemo(() => {
-    if (!booksData) return []
+    if (!booksData || !Array.isArray(booksData)) return []
     const years = booksData
-      .map(book => book.publicationYear)
-      .filter(year => year != null && year !== '')
+      .map(book => {
+        const year = book.publicationYear || book.year_of_release
+        return year != null && year !== '' ? Number(year) : null
+      })
+      .filter(year => year != null && !isNaN(year) && year > 0)
       .sort((a, b) => b - a)
     return [...new Set(years)]
   }, [booksData])
@@ -83,36 +86,46 @@ function BookFilters() {
         />
         <Select
           placeholder="Все жанры"
-          value={selectedGenre}
-          onChange={(e) => setSelectedGenre(e.target.value || null)}
+          value={selectedGenre ? String(selectedGenre) : ''}
+          onChange={(e) => {
+            const genreValue = e.target.value
+            setSelectedGenre(genreValue === '' ? null : genreValue)
+          }}
           options={genres.map(g => ({
-            value: g.id,
+            value: String(g.id),
             label: g.name || g,
           }))}
         />
         <Select
           placeholder="Все авторы"
-          value={selectedAuthor}
-          onChange={(e) => setSelectedAuthor(e.target.value || null)}
+          value={selectedAuthor ? String(selectedAuthor) : ''}
+          onChange={(e) => {
+            const authorValue = e.target.value
+            setSelectedAuthor(authorValue === '' ? null : authorValue)
+          }}
           options={authors.map(a => ({
-            value: a.id,
+            value: String(a.id),
             label: a.name || a,
           }))}
         />
         <Select
           placeholder="Все годы"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value || null)}
+          value={selectedYear ? String(selectedYear) : ''}
+          onChange={(e) => {
+            const yearValue = e.target.value
+            setSelectedYear(yearValue === '' ? null : yearValue)
+          }}
           options={availableYears.map(year => ({
-            value: year,
+            value: String(year),
             label: year.toString(),
           }))}
         />
         <Select
           label="Сортировка"
-          value={sortBy}
+          value={sortBy || 'title'}
           onChange={(e) => setSortBy(e.target.value)}
           options={sortOptions}
+          placeholder=""
         />
       </div>
     </div>

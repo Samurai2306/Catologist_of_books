@@ -25,6 +25,7 @@ function ChatPage() {
   const [inputMessage, setInputMessage] = useState('')
   const [username, setUsername] = useState('')
   const [showUsernameInput, setShowUsernameInput] = useState(true)
+  const [usernameError, setUsernameError] = useState('')
   const messagesEndRef = useRef(null)
   const socketRef = useRef(null)
 
@@ -98,9 +99,25 @@ function ChatPage() {
 
   const handleUsernameSubmit = (e) => {
     e.preventDefault()
-    if (username.trim()) {
-      setShowUsernameInput(false)
+    const trimmedUsername = username.trim()
+    
+    if (!trimmedUsername) {
+      setUsernameError('Введите ваше имя')
+      return
     }
+    
+    if (trimmedUsername.length < 2) {
+      setUsernameError('Имя должно содержать минимум 2 символа')
+      return
+    }
+    
+    if (trimmedUsername.length > 30) {
+      setUsernameError('Имя не должно превышать 30 символов')
+      return
+    }
+    
+    setUsernameError('')
+    setShowUsernameInput(false)
   }
 
   const handleSendMessage = (e) => {
@@ -133,11 +150,16 @@ function ChatPage() {
               type="text"
               placeholder="Введите ваше имя"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="username-input"
-              maxLength={20}
-              required
+              onChange={(e) => {
+                setUsername(e.target.value)
+                if (usernameError) setUsernameError('')
+              }}
+              className={`username-input ${usernameError ? 'error' : ''}`}
+              maxLength={30}
             />
+            {usernameError && (
+              <span className="username-error">{usernameError}</span>
+            )}
             <Button type="submit" variant="primary">
               Войти в чат
             </Button>

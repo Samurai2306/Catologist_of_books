@@ -66,6 +66,41 @@
 .admin-actions-right {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+
+.admin-search-input {
+  min-width: 250px;
+}
+
+.admin-table-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-table-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  min-width: 120px;
+  text-align: center;
 }
 
 .admin-table-container {
@@ -88,6 +123,16 @@
   font-weight: 600;
   color: var(--text-primary);
   border-bottom: 2px solid var(--border-color);
+}
+
+.admin-table th.sortable {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.admin-table th.sortable:hover {
+  background: var(--bg-glass-hover);
+  color: #667eea;
 }
 
 .admin-table td {
@@ -137,6 +182,11 @@
   font-size: 0.875rem;
 }
 
+.table-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .table-actions {
   display: flex;
   gap: 0.5rem;
@@ -156,8 +206,23 @@
 }
 
 .form-group label {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
+  font-family: 'Minecraft', sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.25rem;
+}
+
+/* Улучшенная стилизация для Select и MultiSelect в формах */
+.admin-form .select-group,
+.admin-form .multi-select-group {
+  width: 100%;
+}
+
+.admin-form .select,
+.admin-form .multi-select {
+  width: 100%;
 }
 
 .form-row {

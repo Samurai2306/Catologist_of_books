@@ -45,10 +45,21 @@ function BookCard({ book }) {
             src={book.imageUrl} 
             alt={book.title}
             loading="lazy"
+            onError={(e) => {
+              e.target.style.display = 'none'
+              const placeholder = e.target.nextElementSibling || e.target.parentElement.querySelector('.book-card-placeholder')
+              if (placeholder) {
+                placeholder.style.display = 'flex'
+              } else {
+                const div = document.createElement('div')
+                div.className = 'book-card-placeholder'
+                div.textContent = '📖'
+                e.target.parentElement.appendChild(div)
+              }
+            }}
           />
-        ) : (
-          <div className="book-card-placeholder">📖</div>
-        )}
+        ) : null}
+        <div className="book-card-placeholder" style={{ display: book.imageUrl ? 'none' : 'flex' }}>📖</div>
       </div>
       <div className="book-card-content">
         <h3 className="book-card-title">{book.title}</h3>

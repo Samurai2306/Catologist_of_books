@@ -246,6 +246,22 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.username-input.error {
+  border-color: #f5576c;
+}
+
+.username-input.error:focus {
+  border-color: #f5576c;
+  box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.15);
+}
+
+.username-error {
+  color: #f5576c;
+  font-size: 0.875rem;
+  margin-top: -0.5rem;
+  display: block;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .chat-page {

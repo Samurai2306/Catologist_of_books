@@ -20,6 +20,9 @@ function AdminPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [showAuthSettings, setShowAuthSettings] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   // Загрузка данных
   const { data: books, isLoading: booksLoading } = useQuery({
@@ -274,6 +277,16 @@ function AdminPage() {
             </Button>
           </div>
           <div className="admin-actions-right">
+            <Input
+              type="text"
+              placeholder={`Поиск ${activeTab === 'books' ? 'книг' : activeTab === 'authors' ? 'авторов' : 'жанров'}...`}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="admin-search-input"
+            />
             <Button 
               onClick={() => setShowAuthSettings(true)} 
               variant="secondary"
@@ -292,6 +305,10 @@ function AdminPage() {
             genres={genres || []}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            searchQuery={searchQuery}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
           />
         )}
 
@@ -300,6 +317,10 @@ function AdminPage() {
             authors={authors || []}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            searchQuery={searchQuery}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
           />
         )}
 
@@ -308,6 +329,10 @@ function AdminPage() {
             genres={genres || []}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            searchQuery={searchQuery}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
           />
         )}
       </div>
@@ -383,9 +408,74 @@ function AdminPage() {
 }
 
 // Компонент таблицы книг
-function BooksTable({ books, authors, genres, onEdit, onDelete }) {
+function BooksTable({ books, authors, genres, onEdit, onDelete, searchQuery = '', currentPage = 1, itemsPerPage = 10, onPageChange }) {
+  const [sortField, setSortField] = useState(null)
+  const [sortDirection, setSortDirection] = useState('asc')
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const filteredBooks = books.filter(book => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    const title = (book.title || '').toLowerCase()
+    const bookAuthors = (book.authors || []).map(a => 
+      (typeof a === 'object' ? (a.name || a.full_name || '') : a).toLowerCase()
+    ).join(' ')
+    const bookGenres = (book.genres || []).map(g => 
+      (typeof g === 'object' ? g.name : g).toLowerCase()
+    ).join(' ')
+    return title.includes(query) || bookAuthors.includes(query) || bookGenres.includes(query)
+  })
+
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    if (!sortField) return 0
+    
+    let aValue, bValue
+    switch (sortField) {
+      case 'id':
+        aValue = a.id
+        bValue = b.id
+        break
+      case 'title':
+        aValue = (a.title || '').toLowerCase()
+        bValue = (b.title || '').toLowerCase()
+        break
+      case 'year':
+        aValue = a.publicationYear || 0
+        bValue = b.publicationYear || 0
+        break
+      default:
+        return 0
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const totalPages = Math.ceil(sortedBooks.length / itemsPerPage)
+  const paginatedBooks = sortedBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      onPageChange(1)
+    }
+  }, [totalPages, currentPage, onPageChange])
+
   return (
     <div className="admin-table-container glass">
+      <div className="admin-table-header">
+        <p className="admin-table-info">
+          Найдено: {filteredBooks.length} {filteredBooks.length === 1 ? 'книга' : filteredBooks.length < 5 ? 'книги' : 'книг'}
+        </p>
+      </div>
       <table className="admin-table">
         <thead>
           <tr>
@@ -399,14 +489,14 @@ function BooksTable({ books, authors, genres, onEdit, onDelete }) {
           </tr>
         </thead>
         <tbody>
-          {books.length === 0 ? (
+          {paginatedBooks.length === 0 ? (
             <tr>
               <td colSpan="7" className="empty-cell">
-                Книги не найдены
+                {searchQuery ? 'Книги не найдены по запросу' : 'Книги не найдены'}
               </td>
             </tr>
           ) : (
-            books.map((book) => (
+            paginatedBooks.map((book) => (
               <tr key={book.id}>
                 <td>{book.id}</td>
                 <td>
@@ -422,20 +512,28 @@ function BooksTable({ books, authors, genres, onEdit, onDelete }) {
                 </td>
                 <td>{book.title}</td>
                 <td>
-                  {book.authors?.map((a, idx) => (
-                    <span key={idx} className="table-tag">
-                      {typeof a === 'object' ? a.name : a}
-                    </span>
-                  ))}
+                  {book.authors && book.authors.length > 0 ? (
+                    book.authors.map((a, idx) => (
+                      <span key={idx} className="table-tag">
+                        {typeof a === 'object' ? (a.name || a.full_name || a) : a}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="table-empty">-</span>
+                  )}
                 </td>
                 <td>
-                  {book.genres?.map((g, idx) => (
-                    <span key={idx} className="table-tag">
-                      {typeof g === 'object' ? g.name : g}
-                    </span>
-                  ))}
+                  {book.genres && book.genres.length > 0 ? (
+                    book.genres.map((g, idx) => (
+                      <span key={idx} className="table-tag">
+                        {typeof g === 'object' ? (g.name || g) : g}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="table-empty">-</span>
+                  )}
                 </td>
-                <td>{book.publicationYear || '-'}</td>
+                <td>{book.publicationYear ? String(book.publicationYear) : '-'}</td>
                 <td>
                   <div className="table-actions">
                     <Button
@@ -459,14 +557,58 @@ function BooksTable({ books, authors, genres, onEdit, onDelete }) {
           )}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            ← Назад
+          </Button>
+          <span className="pagination-info">
+            Страница {currentPage} из {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Вперед →
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
 
 // Компонент таблицы авторов
-function AuthorsTable({ authors, onEdit, onDelete }) {
+function AuthorsTable({ authors, onEdit, onDelete, searchQuery = '', currentPage = 1, itemsPerPage = 10, onPageChange }) {
+  const filteredAuthors = authors.filter(author => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    const name = (author.name || '').toLowerCase()
+    return name.includes(query)
+  })
+
+  const totalPages = Math.ceil(filteredAuthors.length / itemsPerPage)
+  const paginatedAuthors = filteredAuthors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      onPageChange(1)
+    }
+  }, [totalPages, currentPage, onPageChange])
+
   return (
     <div className="admin-table-container glass">
+      <div className="admin-table-header">
+        <p className="admin-table-info">
+          Найдено: {filteredAuthors.length} {filteredAuthors.length === 1 ? 'автор' : filteredAuthors.length < 5 ? 'автора' : 'авторов'}
+        </p>
+      </div>
       <table className="admin-table">
         <thead>
           <tr>
@@ -476,14 +618,14 @@ function AuthorsTable({ authors, onEdit, onDelete }) {
           </tr>
         </thead>
         <tbody>
-          {authors.length === 0 ? (
+          {paginatedAuthors.length === 0 ? (
             <tr>
               <td colSpan="3" className="empty-cell">
-                Авторы не найдены
+                {searchQuery ? 'Авторы не найдены по запросу' : 'Авторы не найдены'}
               </td>
             </tr>
           ) : (
-            authors.map((author) => (
+            paginatedAuthors.map((author) => (
               <tr key={author.id}>
                 <td>{author.id}</td>
                 <td>{author.name}</td>
@@ -510,14 +652,58 @@ function AuthorsTable({ authors, onEdit, onDelete }) {
           )}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            ← Назад
+          </Button>
+          <span className="pagination-info">
+            Страница {currentPage} из {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Вперед →
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
 
 // Компонент таблицы жанров
-function GenresTable({ genres, onEdit, onDelete }) {
+function GenresTable({ genres, onEdit, onDelete, searchQuery = '', currentPage = 1, itemsPerPage = 10, onPageChange }) {
+  const filteredGenres = genres.filter(genre => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    const name = (genre.name || '').toLowerCase()
+    return name.includes(query)
+  })
+
+  const totalPages = Math.ceil(filteredGenres.length / itemsPerPage)
+  const paginatedGenres = filteredGenres.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      onPageChange(1)
+    }
+  }, [totalPages, currentPage, onPageChange])
+
   return (
     <div className="admin-table-container glass">
+      <div className="admin-table-header">
+        <p className="admin-table-info">
+          Найдено: {filteredGenres.length} {filteredGenres.length === 1 ? 'жанр' : filteredGenres.length < 5 ? 'жанра' : 'жанров'}
+        </p>
+      </div>
       <table className="admin-table">
         <thead>
           <tr>
@@ -527,14 +713,14 @@ function GenresTable({ genres, onEdit, onDelete }) {
           </tr>
         </thead>
         <tbody>
-          {genres.length === 0 ? (
+          {paginatedGenres.length === 0 ? (
             <tr>
               <td colSpan="3" className="empty-cell">
-                Жанры не найдены
+                {searchQuery ? 'Жанры не найдены по запросу' : 'Жанры не найдены'}
               </td>
             </tr>
           ) : (
-            genres.map((genre) => (
+            paginatedGenres.map((genre) => (
               <tr key={genre.id}>
                 <td>{genre.id}</td>
                 <td>{genre.name}</td>
@@ -561,6 +747,29 @@ function GenresTable({ genres, onEdit, onDelete }) {
           )}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            ← Назад
+          </Button>
+          <span className="pagination-info">
+            Страница {currentPage} из {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Вперед →
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

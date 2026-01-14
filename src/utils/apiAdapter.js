@@ -2,6 +2,8 @@
  * Адаптеры для преобразования данных между форматом API и форматом приложения
  */
 
+import { API_CONFIG } from '../config/api'
+
 // Преобразование книги из формата API в формат приложения
 export const adaptBookFromAPI = (apiBook) => {
   if (!apiBook) return null
@@ -10,11 +12,15 @@ export const adaptBookFromAPI = (apiBook) => {
   let imageUrl = null
   if (apiBook.image) {
     if (apiBook.image.startsWith('http')) {
+      // Полный URL - используем как есть
       imageUrl = apiBook.image
     } else if (apiBook.image.startsWith('/')) {
-      imageUrl = apiBook.image
+      // Абсолютный путь - добавляем базовый URL API
+      imageUrl = `${API_CONFIG.REST_API}${apiBook.image}`
     } else {
-      imageUrl = `/images/${apiBook.image}`
+      // Относительный путь - формируем полный URL
+      // API использует /image/ (единственное число), а не /images/
+      imageUrl = `${API_CONFIG.REST_API}/image/${apiBook.image}`
     }
   }
 

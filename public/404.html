@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    <script>
+      // GitHub Pages не умеет SPA-роутинг: прямой заход на /admin отдаёт 404.
+      // Этот файл делает редирект обратно на index.html, сохраняя путь.
+      // Основано на паттерне "SPA for GitHub Pages".
+      (function () {
+        var l = window.location;
+        var path = l.pathname + l.search + l.hash;
+        // Отправляем на корень Pages-сайта (index.html) и передаём исходный путь через ?p=
+        l.replace(l.origin + l.pathname.replace(/\/[^/]*$/, '/') + '?p=' + encodeURIComponent(path));
+      })();
+    </script>
+  </body>
+</html>
+
