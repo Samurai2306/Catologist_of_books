@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { booksAPI, authorsAPI, genresAPI, imagesAPI } from '../services/api'
 import Button from '../components/UI/Button'
@@ -217,10 +217,22 @@ function AdminPage() {
     setIsModalOpen(true)
   }
 
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setModalType('edit')
-    setEditingItem(item)
     setIsModalOpen(true)
+    // Загружаем полные данные книги из API для редактирования
+    if (activeTab === 'books' && item?.id) {
+      try {
+        const fullBook = await booksAPI.getById(item.id)
+        setEditingItem(fullBook.data)
+      } catch (error) {
+        // Если не удалось загрузить, используем данные из списка
+        setEditingItem(item)
+        toast.error('Не удалось загрузить полные данные книги')
+      }
+    } else {
+      setEditingItem(item)
+    }
   }
 
   const handleDelete = (item) => {
@@ -805,34 +817,10 @@ function AdminModal({
   const [errors, setErrors] = useState({})
   const [uploading, setUploading] = useState(false)
 
-  useEffect(() => {
-    if (item) {
-      if (type === 'books') {
-        const authorIds = item.authors?.map((a) =>
-          String(typeof a === 'object' ? a.id : a)
-        ) || []
-        const genreIds = item.genres?.map((g) =>
-          String(typeof g === 'object' ? g.id : g)
-        ) || []
-        
-        setFormData({
-          title: item.title || '',
-          description: item.description || '',
-          publicationYear: item.publicationYear ? String(item.publicationYear) : '',
-          rating: item.rating ? String(item.rating) : '',
-          imageUrl: item.imageUrl || '',
-          authorIds,
-          genreIds,
-        })
-        setImagePreview(item.imageUrl)
-      } else {
-        setFormData({
-          name: item.name || '',
-        })
-      }
-    } else {
-      // Сброс формы при создании нового элемента
-      setFormData({
+  // Используем useMemo для вычисления данных формы на основе item
+  const initialFormData = useMemo(() => {
+    if (!item) {
+      return {
         title: '',
         description: '',
         publicationYear: '',
@@ -841,11 +829,71 @@ function AdminModal({
         authorIds: [],
         genreIds: [],
         name: '',
-      })
+      }
+    }
+
+    if (type === 'books') {
+      // Извлекаем ID авторов, убеждаемся что это строки
+      const authorIds = (item.authors || []).map((a) => {
+        if (typeof a === 'object' && a !== null) {
+          return String(a.id || a)
+        }
+        return String(a)
+      }).filter(id => id && id !== 'undefined' && id !== 'null' && id !== '')
+      
+      // Извлекаем ID жанров, убеждаемся что это строки
+      const genreIds = (item.genres || []).map((g) => {
+        if (typeof g === 'object' && g !== null) {
+          return String(g.id || g)
+        }
+        return String(g)
+      }).filter(id => id && id !== 'undefined' && id !== 'null' && id !== '')
+      
+      return {
+        title: item.title || '',
+        description: item.description || '',
+        publicationYear: item.publicationYear != null && item.publicationYear !== '' 
+          ? String(item.publicationYear) 
+          : '',
+        rating: item.rating != null && item.rating !== '' 
+          ? String(item.rating) 
+          : '',
+        imageUrl: item.imageUrl || '',
+        authorIds: authorIds.length > 0 ? authorIds : [],
+        genreIds: genreIds.length > 0 ? genreIds : [],
+      }
+    } else if (type === 'authors' || type === 'genres') {
+      return {
+        name: item.name || '',
+      }
+    }
+
+    return {
+      title: '',
+      description: '',
+      publicationYear: '',
+      rating: '',
+      imageUrl: '',
+      authorIds: [],
+      genreIds: [],
+      name: '',
+    }
+  }, [item, type])
+
+  useEffect(() => {
+    // Принудительно обновляем форму при изменении item
+    if (item && type === 'books') {
+      setFormData(initialFormData)
+      setImagePreview(item.imageUrl || null)
+      setImageFile(null)
+    } else if (item && (type === 'authors' || type === 'genres')) {
+      setFormData(initialFormData)
+    } else {
+      setFormData(initialFormData)
       setImagePreview(null)
       setImageFile(null)
     }
-  }, [item, type])
+  }, [initialFormData, item, type])
 
   const validate = () => {
     const newErrors = {}
@@ -1020,7 +1068,7 @@ function AdminModal({
                   setFormData({ ...formData, authorIds: values })
                 }}
                 options={authors.map((a) => ({
-                  value: a.id,
+                  value: String(a.id),
                   label: a.name,
                 }))}
                 placeholder="Выберите авторов..."
@@ -1039,7 +1087,7 @@ function AdminModal({
                   setFormData({ ...formData, genreIds: values })
                 }}
                 options={genres.map((g) => ({
-                  value: g.id,
+                  value: String(g.id),
                   label: g.name,
                 }))}
                 placeholder="Выберите жанры..."

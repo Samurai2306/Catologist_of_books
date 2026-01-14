@@ -57,11 +57,33 @@ export const adaptBooksFromAPI = (apiBooks) => {
 
 // Преобразование книги из формата приложения в формат API
 export const adaptBookToAPI = (appBook) => {
+  // Обработка изображения: API ожидает только имя файла, а не полный путь
+  let image = null
+  if (appBook.imageUrl) {
+    // Если это относительный путь /images/filename.jpg, извлекаем только имя файла
+    if (appBook.imageUrl.startsWith('/images/')) {
+      image = appBook.imageUrl.replace('/images/', '')
+    } 
+    // Если это полный URL, извлекаем имя файла из пути
+    else if (appBook.imageUrl.includes('/images/')) {
+      const parts = appBook.imageUrl.split('/images/')
+      image = parts[parts.length - 1]
+    }
+    // Если это просто имя файла, используем как есть
+    else if (!appBook.imageUrl.includes('/') && !appBook.imageUrl.startsWith('http')) {
+      image = appBook.imageUrl
+    }
+    // Если это полный URL без /images/, оставляем как есть (может быть внешняя ссылка)
+    else {
+      image = appBook.imageUrl
+    }
+  }
+
   return {
     name: appBook.title,
     year_of_release: appBook.publicationYear || null,
     description: appBook.description || '',
-    image: appBook.imageUrl || null,
+    image,
     genre: Array.isArray(appBook.genreIds) ? appBook.genreIds : (appBook.genres?.map(g => typeof g === 'object' ? g.id : g) || []),
     author: Array.isArray(appBook.authorIds) ? appBook.authorIds : (appBook.authors?.map(a => typeof a === 'object' ? a.id : a) || []),
   }
