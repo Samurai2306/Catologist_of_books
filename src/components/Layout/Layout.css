@@ -7,15 +7,17 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
   padding: 1rem 2rem;
-  margin: 1rem;
+  margin: 1rem auto;
+  max-width: 1200px;
+  width: calc(100% - 2rem);
   box-shadow: var(--shadow-md);
 }
 
 .header-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -84,24 +86,6 @@
   border-radius: 2px;
 }
 
-.chat-link {
-  position: relative;
-}
-
-.badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--accent-secondary);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  min-width: 20px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-}
 
 .main-content {
   flex: 1;
@@ -109,6 +93,9 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
 }
 
 .footer {
@@ -117,12 +104,17 @@
   text-align: center;
   color: var(--text-muted);
   margin: 2rem 1rem 1rem;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .header {
     padding: 1rem;
-    margin: 0.5rem;
+    margin: 0.5rem auto;
+    max-width: calc(100% - 1rem);
+    width: calc(100% - 1rem);
   }
 
   .header-container {

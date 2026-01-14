@@ -41,12 +41,6 @@ function HomePage() {
     }
   }, [data])
 
-  useEffect(() => {
-    if (inView && filteredBooks.length > page * itemsPerPage) {
-      setPage(prev => prev + 1)
-    }
-  }, [inView])
-
   const filteredBooks = useMemo(() => {
     if (!allBooks || allBooks.length === 0) return []
 
@@ -109,6 +103,12 @@ function HomePage() {
 
     return filtered
   }, [allBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, sortBy])
+
+  useEffect(() => {
+    if (inView && filteredBooks.length > page * itemsPerPage) {
+      setPage(prev => prev + 1)
+    }
+  }, [inView, filteredBooks, page, itemsPerPage])
 
   const displayedBooks = filteredBooks.slice(0, page * itemsPerPage)
   const hasMore = filteredBooks.length > displayedBooks.length

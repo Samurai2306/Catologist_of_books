@@ -1,20 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
-import { useChatStore } from '../stores/useChatStore'
-import { API_CONFIG } from '../config/api'
+import { useChatStore } from '../../stores/useChatStore'
+import { API_CONFIG } from '../../config/api'
 import { useQuery } from '@tanstack/react-query'
-import { booksAPI } from '../services/api'
-import Button from '../components/UI/Button'
-import LoadingSpinner from '../components/UI/LoadingSpinner'
+import { booksAPI } from '../../services/api'
+import Button from '../UI/Button'
 import toast from 'react-hot-toast'
-import './ChatPage.css'
+import './ChatSidebar.css'
 
-function ChatPage() {
+function ChatSidebar() {
   const {
     messages,
     isConnected,
     onlineUsers,
-    unreadCount,
     addMessage,
     setMessages,
     setConnected,
@@ -22,6 +20,7 @@ function ChatPage() {
     resetUnreadCount,
   } = useChatStore()
 
+  const [isOpen, setIsOpen] = useState(false)
   const [inputMessage, setInputMessage] = useState('')
   const [username, setUsername] = useState('')
   const [showUsernameInput, setShowUsernameInput] = useState(true)
@@ -36,7 +35,6 @@ function ChatPage() {
 
   useEffect(() => {
     if (!showUsernameInput && username) {
-      // Подключение к Socket.IO
       socketRef.current = io(API_CONFIG.WS_SOCKET_IO, {
         transports: ['websocket'],
         reconnection: true,
@@ -88,10 +86,10 @@ function ChatPage() {
   }, [messages])
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && isOpen) {
       resetUnreadCount()
     }
-  }, [isConnected, resetUnreadCount])
+  }, [isConnected, isOpen, resetUnreadCount])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -124,7 +122,6 @@ function ChatPage() {
     e.preventDefault()
     if (!inputMessage.trim() || !socketRef.current || !isConnected) return
 
-    // Проверка на ссылки на книги
     const bookLinkRegex = /\/book\?id=(\d+)/g
     const matches = [...inputMessage.matchAll(bookLinkRegex)]
     
@@ -140,41 +137,31 @@ function ChatPage() {
     setInputMessage('')
   }
 
-  if (showUsernameInput) {
-    return (
-      <div className="chat-page fade-in">
-        <div className="chat-container glass">
-          <h1 className="chat-title">Добро пожаловать в чат</h1>
-          <form onSubmit={handleUsernameSubmit} className="username-form">
-            <input
-              type="text"
-              placeholder="Введите ваше имя"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value)
-                if (usernameError) setUsernameError('')
-              }}
-              className={`username-input ${usernameError ? 'error' : ''}`}
-              maxLength={30}
-            />
-            {usernameError && (
-              <span className="username-error">{usernameError}</span>
-            )}
-            <Button type="submit" variant="primary">
-              Войти в чат
-            </Button>
-          </form>
-        </div>
-      </div>
-    )
+  const handleToggle = () => {
+    const newIsOpen = !isOpen
+    setIsOpen(newIsOpen)
+    if (newIsOpen) {
+      resetUnreadCount()
+    }
   }
 
   return (
-    <div className="chat-page fade-in">
-      <div className="chat-container glass">
-        <div className="chat-header">
-          <div className="chat-header-info">
-            <h1 className="chat-title">Чат</h1>
+    <>
+      <button 
+        className="chat-toggle-button"
+        onClick={handleToggle}
+        aria-label={isOpen ? 'Закрыть чат' : 'Открыть чат'}
+      >
+        <span className="chat-toggle-icon">💬</span>
+        {useChatStore.getState().unreadCount > 0 && (
+          <span className="chat-toggle-badge">{useChatStore.getState().unreadCount}</span>
+        )}
+      </button>
+
+      <div className={`chat-sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="chat-sidebar-header">
+          <div className="chat-sidebar-title">
+            <h2>Чат</h2>
             <div className="chat-status">
               <span
                 className={`status-indicator ${isConnected ? 'online' : 'offline'}`}
@@ -184,54 +171,94 @@ function ChatPage() {
               </span>
             </div>
           </div>
-          <div className="online-users">
-            <span className="online-count">
-              Онлайн: {onlineUsers.length}
-            </span>
+          <div className="chat-sidebar-actions">
+            <div className="online-users">
+              <span className="online-count">
+                Онлайн: {onlineUsers.length}
+              </span>
+            </div>
+            <button 
+              className="chat-close-button"
+              onClick={handleToggle}
+              aria-label="Закрыть чат"
+            >
+              ×
+            </button>
           </div>
         </div>
 
-        <div className="chat-messages" id="chat-messages">
-          {messages.length === 0 ? (
-            <div className="chat-empty">
-              <p>Нет сообщений. Начните общение!</p>
+        <div className="chat-sidebar-content">
+          {showUsernameInput ? (
+            <div className="chat-username-form-container">
+              <h3>Добро пожаловать в чат</h3>
+              <form onSubmit={handleUsernameSubmit} className="username-form">
+                <input
+                  type="text"
+                  placeholder="Введите ваше имя"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    if (usernameError) setUsernameError('')
+                  }}
+                  className={`username-input ${usernameError ? 'error' : ''}`}
+                  maxLength={30}
+                />
+                {usernameError && (
+                  <span className="username-error">{usernameError}</span>
+                )}
+                <Button type="submit" variant="primary" size="small">
+                  Войти в чат
+                </Button>
+              </form>
             </div>
           ) : (
-            messages.map((message, index) => (
-              <ChatMessage
-                key={message.id || index}
-                message={message}
-                currentUsername={username}
-                books={books || []}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+            <>
+              <div className="chat-messages" id="chat-messages">
+                {messages.length === 0 ? (
+                  <div className="chat-empty">
+                    <p>Нет сообщений. Начните общение!</p>
+                  </div>
+                ) : (
+                  messages.map((message, index) => (
+                    <ChatMessage
+                      key={message.id || index}
+                      message={message}
+                      currentUsername={username}
+                      books={books || []}
+                    />
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
 
-        <form onSubmit={handleSendMessage} className="chat-input-form">
-          <input
-            type="text"
-            placeholder={
-              isConnected
-                ? 'Введите сообщение... (можно добавить ссылку на книгу)'
-                : 'Подключение...'
-            }
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            className="chat-input"
-            disabled={!isConnected}
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!isConnected || !inputMessage.trim()}
-          >
-            Отправить
-          </Button>
-        </form>
+              <form onSubmit={handleSendMessage} className="chat-input-form">
+                <input
+                  type="text"
+                  placeholder={
+                    isConnected
+                      ? 'Введите сообщение...'
+                      : 'Подключение...'
+                  }
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  className="chat-input"
+                  disabled={!isConnected}
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="small"
+                  disabled={!isConnected || !inputMessage.trim()}
+                >
+                  Отправить
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+      <div className={`chat-sidebar-overlay ${isOpen ? 'visible' : ''}`} onClick={handleToggle} />
+    </>
   )
 }
 
@@ -245,14 +272,12 @@ function ChatMessage({ message, currentUsername, books }) {
       })
     : ''
 
-  // Поиск книг в сообщении
   const bookLinks = message.bookIds
     ? message.bookIds
         .map((id) => books.find((b) => b.id === Number(id)))
         .filter(Boolean)
     : []
 
-  // Извлечение текста без ссылок
   let messageText = message.text || message.message || ''
   const bookLinkRegex = /\/book\?id=(\d+)/g
   messageText = messageText.replace(bookLinkRegex, '').trim()
@@ -303,5 +328,4 @@ function BookPreview({ book }) {
   )
 }
 
-export default ChatPage
-
+export default ChatSidebar

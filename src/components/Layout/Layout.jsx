@@ -1,10 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useChatStore } from '../../stores/useChatStore'
+import ChatSidebar from '../Chat/ChatSidebar'
 import './Layout.css'
 
 function Layout({ children }) {
   const location = useLocation()
-  const unreadCount = useChatStore((state) => state.unreadCount)
 
   return (
     <div className="layout">
@@ -27,15 +26,6 @@ function Layout({ children }) {
             >
               Админ-панель
             </Link>
-            <Link 
-              to="/chat" 
-              className={`nav-link chat-link ${location.pathname === '/chat' ? 'active' : ''}`}
-            >
-              Чат
-              {unreadCount > 0 && (
-                <span className="badge">{unreadCount}</span>
-              )}
-            </Link>
           </nav>
         </div>
       </header>
@@ -45,6 +35,7 @@ function Layout({ children }) {
       <footer className="footer glass">
         <p>&copy; 2024 Каталог книг. Все права защищены.</p>
       </footer>
+      <ChatSidebar />
     </div>
   )
 }

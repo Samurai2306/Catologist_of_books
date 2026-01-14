@@ -6,7 +6,6 @@ import LoadingSpinner from './components/UI/LoadingSpinner'
 const HomePage = lazy(() => import('./pages/HomePage'))
 const BookDetailPage = lazy(() => import('./pages/BookDetailPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
-const ChatPage = lazy(() => import('./pages/ChatPage'))
 
 function App() {
   return (
@@ -16,7 +15,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/book" element={<BookDetailPage />} />
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </Suspense>
     </Layout>

@@ -106,6 +106,8 @@
 .admin-table-container {
   padding: 1.5rem;
   overflow-x: auto;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .admin-table {

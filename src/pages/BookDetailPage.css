@@ -40,6 +40,8 @@
   padding: 2rem;
   background: var(--bg-glass);
   border-radius: 16px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .book-detail-image {

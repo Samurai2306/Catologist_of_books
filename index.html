@@ -11,21 +11,6 @@
     <meta property="og:description" content="Современная платформа для поиска и управления библиотекой книг" />
     <meta property="og:type" content="website" />
     <title>Каталог книг</title>
-    <script>
-      // SPA fallback для GitHub Pages: 404.html редиректит на /?p=<original_path>
-      // Здесь восстанавливаем исходный путь.
-      (function () {
-        var params = new URLSearchParams(window.location.search);
-        var p = params.get('p');
-        if (!p) return;
-        params.delete('p');
-        var newUrl = decodeURIComponent(p);
-        if (params.toString()) {
-          newUrl += (newUrl.indexOf('?') === -1 ? '?' : '&') + params.toString();
-        }
-        window.history.replaceState(null, '', newUrl);
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>
