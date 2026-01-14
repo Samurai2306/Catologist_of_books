@@ -4,9 +4,18 @@
 
 import { API_CONFIG } from '../config/api'
 
+// Get the base URL for images - always use proxy in production
+const getImageBaseUrl = () => {
+  // In production, images are served through the proxy at /api
+  // In development, use the direct external API URL
+  return API_CONFIG.REST_API;
+}
+
 // Преобразование книги из формата API в формат приложения
 export const adaptBookFromAPI = (apiBook) => {
   if (!apiBook) return null
+
+  const imageBase = getImageBaseUrl();
 
   // Обработка изображения - API возвращает путь относительно /images/
   let imageUrl = null
@@ -16,11 +25,11 @@ export const adaptBookFromAPI = (apiBook) => {
       imageUrl = apiBook.image
     } else if (apiBook.image.startsWith('/')) {
       // Абсолютный путь - добавляем базовый URL API
-      imageUrl = `${API_CONFIG.REST_API}${apiBook.image}`
+      imageUrl = `${imageBase}${apiBook.image}`
     } else {
       // Относительный путь - формируем полный URL
       // API использует /image/ (единственное число), а не /images/
-      imageUrl = `${API_CONFIG.REST_API}/image/${apiBook.image}`
+      imageUrl = `${imageBase}/image/${apiBook.image}`
     }
   }
 

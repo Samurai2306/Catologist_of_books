@@ -231,6 +231,28 @@
   margin-top: -0.5rem;
 }
 
+/* Chat unavailable message */
+.chat-unavailable {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.chat-unavailable h3 {
+  font-size: 1.125rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.chat-unavailable p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;

@@ -28,13 +28,17 @@ function ChatSidebar() {
   const messagesEndRef = useRef(null)
   const socketRef = useRef(null)
 
+  // Check if WebSocket is enabled in current environment
+  const isWebSocketEnabled = API_CONFIG.WS_ENABLED
+
   const { data: books } = useQuery({
     queryKey: ['books'],
     queryFn: () => booksAPI.getAll().then(res => res.data),
   })
 
   useEffect(() => {
-    if (!showUsernameInput && username) {
+    // Only connect if WebSocket is enabled and username is set
+    if (!showUsernameInput && username && isWebSocketEnabled) {
       socketRef.current = io(API_CONFIG.WS_SOCKET_IO, {
         transports: ['websocket'],
         reconnection: true,
@@ -79,7 +83,7 @@ function ChatSidebar() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showUsernameInput, username])
+  }, [showUsernameInput, username, isWebSocketEnabled])
 
   useEffect(() => {
     scrollToBottom()
@@ -188,7 +192,12 @@ function ChatSidebar() {
         </div>
 
         <div className="chat-sidebar-content">
-          {showUsernameInput ? (
+          {!isWebSocketEnabled ? (
+            <div className="chat-unavailable">
+              <h3>Чат временно недоступен</h3>
+              <p>Функция чата недоступна в текущем окружении. WebSocket соединение требует защищённого протокола (WSS) на HTTPS сайтах.</p>
+            </div>
+          ) : showUsernameInput ? (
             <div className="chat-username-form-container">
               <h3>Добро пожаловать в чат</h3>
               <form onSubmit={handleUsernameSubmit} className="username-form">
